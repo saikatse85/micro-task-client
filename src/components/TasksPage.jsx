@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import Container from "./Container";
+import { useRouter } from "next/navigation";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const fetchTasks = async () => {
     try {
@@ -42,6 +44,25 @@ export default function TasksPage() {
     );
   }
 
+  const handleViewTask = (e, taskId) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      e.preventDefault();
+
+      Swal.fire({
+        icon: "warning",
+        title: "Login Required",
+        text: "To view task details you need to login first.",
+      }).then(() => {
+        router.push("/login");
+      });
+
+      return;
+    }
+
+    router.push(`/dashboard/tasks/${taskId}`);
+  };
   return (
     <div className="min-h-screen mt-16 bg-slate-100 dark:bg-slate-950 text-black dark:text-white transition-colors">
       <Container>
@@ -132,17 +153,17 @@ export default function TasksPage() {
                   ID: {task._id.slice(-5)}
                 </div>
 
-                <Link
-                  href={`/dashboard/tasks/${task._id}`}
+                <button
+                  onClick={(e) => handleViewTask(e, task._id)}
                   className="
-                    px-5 py-2 rounded-2xl
-                    bg-emerald-500 hover:bg-emerald-600
-                    text-white text-sm font-semibold
-                    transition
-                  "
+    px-5 py-2 rounded-2xl
+    bg-emerald-500 hover:bg-emerald-600
+    text-white text-sm font-semibold
+    transition
+  "
                 >
                   View Task
-                </Link>
+                </button>
               </div>
 
               {/* GLOW EFFECT */}
