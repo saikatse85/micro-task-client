@@ -87,7 +87,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      setAuthTokenCookie(tokenData.token);
+      // setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
@@ -173,7 +173,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      setAuthTokenCookie(tokenData.token);
+      // setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
