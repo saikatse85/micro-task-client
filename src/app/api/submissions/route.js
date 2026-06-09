@@ -1,7 +1,8 @@
 import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 // =========================
-// CREATE SUBMISSION
+// POST SUBMISSION
 // =========================
 export async function POST(req) {
   try {
@@ -14,13 +15,12 @@ export async function POST(req) {
       buyer_name,
       worker_email,
       worker_name,
+      worker_photo,
       submission_details,
       proof_url,
+      proof_image,
     } = body;
 
-    // =========================
-    // VALIDATION
-    // =========================
     if (
       !task_id ||
       !task_title ||
@@ -29,10 +29,7 @@ export async function POST(req) {
       !submission_details
     ) {
       return Response.json(
-        {
-          success: false,
-          message: "Missing required fields",
-        },
+        { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
@@ -40,9 +37,6 @@ export async function POST(req) {
     const client = await clientPromise;
     const db = client.db("micro-task-db");
 
-    // =========================
-    // PREVENT DUPLICATE SUBMISSION
-    // =========================
     const alreadySubmitted = await db.collection("submissions").findOne({
       task_id,
       worker_email,
@@ -50,29 +44,21 @@ export async function POST(req) {
 
     if (alreadySubmitted) {
       return Response.json(
-        {
-          success: false,
-          message: "You already submitted this task",
-        },
+        { success: false, message: "Already submitted" },
         { status: 409 }
       );
     }
 
-    // =========================
-    // CREATE SUBMISSION
-    // =========================
     const submissionData = {
       task_id,
       task_title,
       buyer_email,
       buyer_name,
-
       worker_email,
       worker_name,
-
+      worker_photo: worker_photo || "",
       submission_details,
-      proof_url: proof_url || "",
-
+      proof_url: proof_image || proof_url || "",
       status: "pending",
       createdAt: new Date(),
     };
@@ -81,42 +67,56 @@ export async function POST(req) {
       .collection("submissions")
       .insertOne(submissionData);
 
-    // =========================
-    // REDUCE REQUIRED WORKERS
-    // =========================
+    // reduce worker slots
     await db.collection("tasks").updateOne(
-      { _id: submissionData.task_id },
-      {
-        $inc: {
-          required_workers: -1,
-        },
-      }
+      { _id: new ObjectId(task_id) },
+      { $inc: { required_workers: -1 } }
     );
 
     // =========================
-    // CREATE BUYER NOTIFICATION
+    // NOTIFICATIONS
     // =========================
+
     await db.collection("notifications").insertOne({
       toEmail: buyer_email,
+      role: "buyer",
       type: "info",
       message: `${worker_name} submitted work for "${task_title}"`,
       actionRoute: "/dashboard/task-review",
-      time: new Date(),
+      isRead: false,
+      createdAt: new Date(),
+    });
+
+    await db.collection("notifications").insertOne({
+      toEmail: worker_email,
+      role: "worker",
+      type: "success",
+      message: `You submitted "${task_title}" successfully`,
+      actionRoute: "/dashboard/my-submissions",
+      isRead: false,
+      createdAt: new Date(),
+    });
+
+    await db.collection("notifications").insertOne({
+      toEmail: "admin@system.com",
+      role: "admin",
+      type: "info",
+      message: `New submission: "${task_title}"`,
+      actionRoute: "/dashboard/manage-tasks",
+      isRead: false,
+      createdAt: new Date(),
     });
 
     return Response.json({
       success: true,
-      message: "Submission created successfully",
+      message: "Submission created",
       insertedId: result.insertedId,
     });
   } catch (error) {
-    console.log("SUBMISSION POST ERROR:", error);
+    console.log(error);
 
     return Response.json(
-      {
-        success: false,
-        message: error.message,
-      },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }
@@ -137,19 +137,8 @@ export async function GET(req) {
 
     let query = {};
 
-    // =========================
-    // WORKER MY SUBMISSIONS
-    // =========================
-    if (worker_email) {
-      query.worker_email = worker_email;
-    }
-
-    // =========================
-    // BUYER TASK REVIEWS
-    // =========================
-    if (buyer_email) {
-      query.buyer_email = buyer_email;
-    }
+    if (worker_email) query.worker_email = worker_email;
+    if (buyer_email) query.buyer_email = buyer_email;
 
     const submissions = await db
       .collection("submissions")
@@ -162,13 +151,10 @@ export async function GET(req) {
       data: submissions,
     });
   } catch (error) {
-    console.log("SUBMISSION GET ERROR:", error);
+    console.log(error);
 
     return Response.json(
-      {
-        success: false,
-        message: error.message,
-      },
+      { success: false, message: error.message },
       { status: 500 }
     );
   }

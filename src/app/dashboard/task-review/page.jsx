@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState, useContext } from "react";
 import Swal from "sweetalert2";
 import { AuthContext } from "@/context/AuthProvider";
+import ReviewModal from "@/components/ReviewModal";
 
 export default function TaskReviewPage() {
   const { user } = useContext(AuthContext);
@@ -10,6 +12,9 @@ export default function TaskReviewPage() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
 
   // =========================
   // FETCH SUBMISSIONS (BUYER ONLY)
@@ -157,8 +162,23 @@ export default function TaskReviewPage() {
               >
                 {/* WORKER */}
                 <td className="p-3">
-                  <p className="font-semibold">{item.worker_name}</p>
-                  <p className="text-sm text-gray-500">{item.worker_email}</p>
+                  <div className="flex items-center gap-3">
+                    {item.worker_photo ? (
+                      <Image
+                        src={item.worker_photo}
+                        alt={item.worker_name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-white/10"
+                      />
+                    ) : null}
+                    <div>
+                      <p className="font-semibold">{item.worker_name}</p>
+                      <p className="text-sm text-gray-500">
+                        {item.worker_email}
+                      </p>
+                    </div>
+                  </div>
                 </td>
 
                 {/* TASK */}
@@ -171,14 +191,24 @@ export default function TaskReviewPage() {
 
                 {/* PROOF */}
                 <td className="p-3">
-                  {item.proof_url ? (
-                    <a
-                      href={item.proof_url}
-                      target="_blank"
-                      className="text-blue-500 underline"
-                    >
-                      View Proof
-                    </a>
+                  {item.proof_url || item.proof_image ? (
+                    <div className="space-y-2">
+                      <a
+                        href={item.proof_url || item.proof_image}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-500 underline text-sm"
+                      >
+                        View Proof
+                      </a>
+                      <Image
+                        src={item.proof_url || item.proof_image}
+                        alt="Submission proof"
+                        width={80}
+                        height={80}
+                        className="w-20 h-20 rounded-xl object-cover border border-gray-200 dark:border-white/10"
+                      />
+                    </div>
                   ) : (
                     "No proof"
                   )}
@@ -205,7 +235,10 @@ export default function TaskReviewPage() {
                 {/* ACTION */}
                 <td className="p-3 text-center flex space-x-2">
                   <button
-                    onClick={() => handleApprove(item._id)}
+                    onClick={() => {
+                      setSelectedSubmission(item);
+                      setReviewModalOpen(true);
+                    }}
                     disabled={item.status !== "pending" || actionLoading}
                     className="px-3 py-1 rounded-lg bg-green-500 text-white disabled:opacity-50"
                   >
@@ -225,6 +258,37 @@ export default function TaskReviewPage() {
           </tbody>
         </table>
       </div>
+      <ReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setSelectedSubmission(null);
+        }}
+        workerName={selectedSubmission?.worker_name}
+        onSubmit={async ({ rating, review }) => {
+          await fetch("/api/reviews", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              task_id: selectedSubmission.task_id,
+
+              worker_email: selectedSubmission.worker_email,
+              worker_name: selectedSubmission.worker_name,
+              worker_photo: selectedSubmission.worker_photo || "",
+
+              buyer_email: user.email,
+              buyer_name: user.displayName,
+
+              rating,
+              review_text: review,
+            }),
+          });
+
+          await handleApprove(selectedSubmission._id);
+        }}
+      />
     </div>
   );
 }

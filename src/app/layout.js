@@ -4,7 +4,7 @@ import AuthProvider from "@/context/AuthProvider";
 
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/context/ThemeProvider";
-import FooterSection from "@/components/Footer";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col">
         <ThemeProvider attribute="class"
       defaultTheme="system"
       enableSystem
@@ -36,7 +36,6 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <Navbar />
             {children}
-            <FooterSection/>
           </AuthProvider>
         </ThemeProvider>
       </body>

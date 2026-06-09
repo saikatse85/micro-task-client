@@ -1,11 +1,14 @@
+import Container from "@/components/Container";
 import TasksPage from "@/components/TasksPage";
 import React from "react";
 
 const Tasks = () => {
   return (
-    <div>
-      <TasksPage></TasksPage>
-    </div>
+    <Container>
+      <div>
+        <TasksPage></TasksPage>
+      </div>
+    </Container>
   );
 };
 

@@ -13,20 +13,24 @@ export async function GET(req) {
 
     let filter = {};
 
-    if (email) filter.toEmail = email;
-    if (role) filter.role = role;
+    // ✅ role-based filtering (safe logic)
+    if (role === "admin") {
+      filter.role = "admin";
+    } else {
+      if (email) filter.toEmail = email;
+      if (role) filter.role = role;
+    }
 
     const notifications = await db
       .collection("notifications")
       .find(filter)
-      .sort({ time: -1 })
+      .sort({ createdAt: -1 }) // FIXED
       .limit(limit)
       .toArray();
 
-    // 🔥 IMPORTANT: always return consistent structure
     return Response.json({
       success: true,
-      notifications: Array.isArray(notifications) ? notifications : [],
+      notifications,
     });
 
   } catch (error) {
@@ -35,7 +39,7 @@ export async function GET(req) {
     return Response.json(
       {
         success: false,
-        notifications: [], // 🔥 important fallback
+        notifications: [],
         message: error.message,
       },
       { status: 500 }

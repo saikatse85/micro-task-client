@@ -1,35 +1,24 @@
-// src/components/home/TestimonialsSection.jsx
+"use client";
+
+import { useEffect, useState } from "react";
 
 export default function TestimonialsSection() {
-  const testimonials = [
-    {
-      id: 1,
-      name: "Rahim Uddin",
-      review:
-        "This platform helped me earn money online while learning digital skills.",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400",
-    },
-    {
-      id: 2,
-      name: "Mim Akter",
-      review:
-        "Very smooth task system and withdrawal process. Highly recommended.",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400",
-    },
-    {
-      id: 3,
-      name: "Sabbir Hossain",
-      review:
-        "Perfect platform for students who want side income from micro tasks.",
-      image:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=400",
-    },
-  ];
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((res) => res.json())
+      .then((data) => {
+        setReviews(data.data || []);
+      });
+  }, []);
+
+  if (!reviews.length) return null;
+
+  const displayReviews = [...reviews, ...reviews];
 
   return (
-    <section className="py-24 px-6">
+    <section className="py-24 px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-black">What Users Say</h2>
@@ -39,33 +28,64 @@ export default function TestimonialsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-white/10 p-8"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+        <div className="relative overflow-hidden">
+          <div className="flex gap-8 marquee-track">
+            {displayReviews.map((item, index) => (
+              <div
+                key={`${item._id}-${index}`}
+                className="min-w-[380px] h-[260px] bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-white/10 p-8 flex-shrink-0 flex flex-col"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  {item.worker_photo ? (
+                    <img
+                      src={item.worker_photo}
+                      alt={item.worker_name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-slate-300 flex items-center justify-center text-xl font-bold">
+                      {item.worker_name?.charAt(0)}
+                    </div>
+                  )}
 
-                <div>
-                  <h3 className="text-xl font-bold">{item.name}</h3>
+                  <div>
+                    <h3 className="text-xl font-bold">{item.worker_name}</h3>
 
-                  <p className="text-emerald-400">Verified User</p>
+                    <p className="text-emerald-500">
+                      {"⭐".repeat(item.rating || 5)}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
-                “{item.review}”
-              </p>
-            </div>
-          ))}
+                <p className="w-full max-w-[380px] text-slate-600 dark:text-slate-300 leading-relaxed text-base line-clamp-2 break-words">
+                  {item.review_text}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .marquee-track {
+          width: max-content;
+          animation: marquee 35s linear infinite;
+        }
+
+        .marquee-track:hover {
+          animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+          from {
+            transform: translateX(0);
+          }
+
+          to {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </section>
   );
 }

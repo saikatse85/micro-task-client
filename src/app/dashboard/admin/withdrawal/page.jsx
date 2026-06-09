@@ -7,6 +7,9 @@ export default function WithdrawalsPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ======================
+  // FETCH WITHDRAWALS
+  // ======================
   const fetchWithdrawals = async () => {
     try {
       setLoading(true);
@@ -27,7 +30,18 @@ export default function WithdrawalsPage() {
     fetchWithdrawals();
   }, []);
 
+  // ======================
+  // UPDATE LOCAL STATE
+  // ======================
+  const updateLocalStatus = (id, status) => {
+    setData((prev) =>
+      prev.map((item) => (item._id === id ? { ...item, status } : item)),
+    );
+  };
+
+  // ======================
   // APPROVE
+  // ======================
   const handleApprove = async (id) => {
     const confirm = await Swal.fire({
       title: "Approve withdrawal?",
@@ -43,15 +57,19 @@ export default function WithdrawalsPage() {
       body: JSON.stringify({ id }),
     });
 
-    const data = await res.json();
+    const result = await res.json();
 
-    if (data.success) {
-      Swal.fire("Success", data.message, "success");
-      fetchWithdrawals();
+    if (result.success) {
+      Swal.fire("Success", result.message, "success");
+
+      // update UI instantly
+      updateLocalStatus(id, "approved");
     }
   };
 
+  // ======================
   // REJECT
+  // ======================
   const handleReject = async (id) => {
     const confirm = await Swal.fire({
       title: "Reject withdrawal?",
@@ -67,11 +85,13 @@ export default function WithdrawalsPage() {
       body: JSON.stringify({ id }),
     });
 
-    const data = await res.json();
+    const result = await res.json();
 
-    if (data.success) {
-      Swal.fire("Rejected", data.message, "success");
-      fetchWithdrawals();
+    if (result.success) {
+      Swal.fire("Rejected", result.message, "success");
+
+      // update UI instantly
+      updateLocalStatus(id, "rejected");
     }
   };
 
@@ -90,25 +110,37 @@ export default function WithdrawalsPage() {
           data.map((w) => (
             <div
               key={w._id}
-              className="p-4 border rounded-xl flex justify-between"
+              className="p-4 border rounded-xl flex justify-between items-center"
             >
+              {/* INFO */}
               <div>
                 <p className="font-bold">{w.worker_email}</p>
                 <p>Coins: {w.withdrawal_coin}</p>
                 <p>Status: {w.status}</p>
               </div>
 
+              {/* ACTIONS */}
               <div className="space-x-2">
                 <button
                   onClick={() => handleApprove(w._id)}
-                  className="px-3 py-1 bg-green-500 text-white rounded"
+                  disabled={w.status !== "pending"}
+                  className={`px-3 py-1 rounded text-white ${
+                    w.status === "pending"
+                      ? "bg-green-500"
+                      : "bg-green-300 cursor-not-allowed"
+                  }`}
                 >
                   Approve
                 </button>
 
                 <button
                   onClick={() => handleReject(w._id)}
-                  className="px-3 py-1 bg-red-500 text-white rounded"
+                  disabled={w.status !== "pending"}
+                  className={`px-3 py-1 rounded text-white ${
+                    w.status === "pending"
+                      ? "bg-red-500"
+                      : "bg-red-300 cursor-not-allowed"
+                  }`}
                 >
                   Reject
                 </button>

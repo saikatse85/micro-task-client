@@ -4,21 +4,34 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const {
-      worker_email,
-      withdrawal_coin,
-      amount_usd,
-    } = body;
+    const { worker_email, withdrawal_coin, amount_usd } = body;
+    const amount = Number(withdrawal_coin);
 
-    if (!worker_email || !withdrawal_coin) {
+    if (!worker_email || !Number.isFinite(amount) || amount <= 0) {
       return Response.json(
-        { message: "Missing fields" },
-        { status: 400 }
+        { message: "Invalid withdrawal amount" },
+        { status: 400 },
       );
     }
 
     const client = await clientPromise;
     const db = client.db("micro-task-db");
+
+    const user = await db.collection("users").findOne({ email: worker_email });
+
+    if (!user) {
+      return Response.json(
+        { message: "User not found" },
+        { status: 404 },
+      );
+    }
+
+    if ((user.coin ?? 0) < amount) {
+      return Response.json(
+        { message: "Insufficient coins" },
+        { status: 400 },
+      );
+    }
 
     const withdrawal = {
       worker_email,
@@ -31,6 +44,11 @@ export async function POST(req) {
     const result = await db
       .collection("withdrawals")
       .insertOne(withdrawal);
+
+    await db.collection("users").updateOne(
+      { email: worker_email },
+      { $inc: { coin: -amount } },
+    );
 
     return Response.json({
       success: true,

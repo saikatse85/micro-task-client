@@ -44,15 +44,7 @@ export async function PATCH(req) {
       );
     }
 
-    // deduct coins from user
-    await db
-      .collection("users")
-      .updateOne(
-        { email: withdrawal.worker_email },
-        { $inc: { coin: -withdrawal.withdrawal_coin } },
-      );
-
-    // update withdrawal status
+    // update withdrawal status only; coins are already deducted when the request was created
     await db
       .collection("withdrawals")
       .updateOne({ _id: new ObjectId(id) }, { $set: { status: "approved" } });

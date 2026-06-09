@@ -14,6 +14,7 @@ import {
 
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX =
@@ -24,6 +25,10 @@ export default function RegisterPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const router = useRouter();
 
   const handleImageUpload = async (e) => {
@@ -268,21 +273,45 @@ export default function RegisterPage() {
             className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-100 text-slate-900 outline-none transition duration-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-400 dark:focus:ring-emerald-500/20"
           />
 
-          <input
-            name="password"
-            type="password"
-            required
-            placeholder="Password"
-            className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-100 text-slate-900 outline-none transition duration-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-400 dark:focus:ring-emerald-500/20"
-          />
+          <div className="relative">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              placeholder="Password"
+              className="w-full px-4 py-3 pr-14 rounded-2xl border border-slate-300 bg-slate-100 text-slate-900 outline-none transition duration-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
 
-          <input
-            name="confirmPassword"
-            type="password"
-            required
-            placeholder="Confirm Password"
-            className="w-full px-4 py-3 rounded-2xl border border-slate-300 bg-slate-100 text-slate-900 outline-none transition duration-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-emerald-400 dark:focus:ring-emerald-500/20"
-          />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-500"
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <input
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              placeholder="Confirm Password"
+              className="w-full px-4 py-3 pr-14 rounded-2xl border border-slate-300 bg-slate-100 text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-500"
+            >
+              {showConfirmPassword ? (
+                <FaEyeSlash size={18} />
+              ) : (
+                <FaEye size={18} />
+              )}
+            </button>
+          </div>
 
           <select
             name="role"

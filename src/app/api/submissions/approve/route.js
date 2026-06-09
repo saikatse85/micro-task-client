@@ -73,9 +73,11 @@ export async function PATCH(req) {
     // =========================
     await db.collection("notifications").insertOne({
       toEmail: submission.worker_email,
+      role: "worker",
       message: `Your submission for "${task.task_title}" was approved. You earned ${task.payable_amount} coins.`,
       actionRoute: "/dashboard/my-submissions",
       type: "success",
+      createdAt: new Date(),
       time: new Date(),
     });
 
@@ -84,9 +86,11 @@ export async function PATCH(req) {
     // =========================
     await db.collection("notifications").insertOne({
       toEmail: task.buyer_email,
+      role: "buyer",
       message: `A worker completed your task "${task.task_title}".`,
       actionRoute: "/dashboard/my-tasks",
       type: "info",
+      createdAt: new Date(),
       time: new Date(),
     });
 

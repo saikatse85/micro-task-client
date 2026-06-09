@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   signInWithEmailAndPassword,
@@ -12,12 +12,17 @@ import {
 
 import { auth } from "@/lib/firebase";
 import Swal from "sweetalert2";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const redirect = searchParams.get("redirect") || "/dashboard";
+
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -50,14 +55,16 @@ export default function LoginPage() {
       const profileResponse = await fetch(
         `/api/users/${encodeURIComponent(result.user.email)}`,
       );
+
       const profileData = await profileResponse.json();
 
-      if (!profileData || !profileData.email) {
-        throw new Error("User profile not found in database.");
+      if (!profileResponse.ok || !profileData.user) {
+        throw new Error(
+          profileData.message || "User profile not found in database.",
+        );
       }
 
-      // Get role from MongoDB (use DB value directly)
-      const redirectRole = profileData.role;
+      const redirectRole = profileData.user.role;
 
       // Generate JWT token
       const tokenResponse = await fetch("/api/jwt", {
@@ -82,7 +89,11 @@ export default function LoginPage() {
       });
 
       setTimeout(() => {
-        router.push(`/dashboard/${redirectRole}`);
+        if (redirect === "/dashboard") {
+          router.push(`/dashboard/${redirectRole}`);
+        } else {
+          router.push(redirect);
+        }
       }, 500);
     } catch (error) {
       console.log(error);
@@ -223,13 +234,33 @@ export default function LoginPage() {
 
           <div>
             <label className="block mb-2 text-sm font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              required
-              placeholder="Enter your password"
-              className="w-full px-4 py-3 rounded-2xl border outline-none transition bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-white/10 focus:border-emerald-500 dark:focus:border-emerald-400"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                required
+                placeholder="Enter your password"
+                className="
+        w-full px-4 py-3 pr-12
+        rounded-2xl border outline-none transition
+        bg-slate-100 dark:bg-slate-800
+        border-slate-300 dark:border-white/10
+        focus:border-emerald-500 dark:focus:border-emerald-400
+      "
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="
+        absolute right-4 top-1/2 -translate-y-1/2
+        text-slate-500 hover:text-emerald-500
+      "
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </button>
+            </div>
           </div>
 
           <button

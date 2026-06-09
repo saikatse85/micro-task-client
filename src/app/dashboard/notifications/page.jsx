@@ -11,28 +11,44 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-
-      const res = await fetch(`/api/notifications?email=${user?.email}`);
-      const data = await res.json();
-
-      // ✅ FIX: always read correct structure
-      setNotifications(
-        Array.isArray(data?.notifications) ? data.notifications : [],
-      );
-    } catch (error) {
-      console.log(error);
-      setNotifications([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (user?.email) fetchNotifications();
-  }, [user]);
+    if (!user?.email) return;
+
+    let isMounted = true;
+
+    const loadNotifications = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch(
+          `/api/notifications?email=${user.email}&role=${user.role}`,
+        );
+
+        const data = await res.json();
+
+        if (isMounted) {
+          setNotifications(
+            Array.isArray(data?.notifications) ? data.notifications : [],
+          );
+        }
+      } catch (error) {
+        console.log(error);
+        if (isMounted) {
+          setNotifications([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadNotifications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.email, user?.role]);
 
   if (loading) {
     return (
@@ -64,7 +80,7 @@ export default function NotificationsPage() {
               <div>
                 <h3 className="font-bold">{n.message}</h3>
                 <p className="text-sm text-gray-500">
-                  {new Date(n.time).toLocaleString()}
+                  {new Date(n.createdAt).toLocaleString()}
                 </p>
               </div>
             </div>

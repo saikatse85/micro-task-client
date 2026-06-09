@@ -1,16 +1,19 @@
 "use client";
 
-import { useContext, useEffect } from "react";
-import { Bell, Menu } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import { Bell } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
+
 import { useRouter, usePathname } from "next/navigation";
 import { AuthContext } from "@/context/AuthProvider";
 import Swal from "sweetalert2";
+import FooterSection from "@/components/Footer";
 
 export default function DashboardLayout({ children }) {
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -91,34 +94,28 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-black dark:text-white flex">
+    <div className="h-screen bg-gray-50 dark:bg-slate-950 text-black dark:text-white overflow-hidden">
       {/* SIDEBAR */}
-      <Sidebar />
+      <Sidebar open={sidebarOpen} onToggle={setSidebarOpen} />
 
-      {/* MAIN AREA */}
-      <div className="flex-1 mx-auto flex flex-col">
+      {/* RIGHT SIDE */}
+      <div className="lg:ml-72 h-screen flex flex-col">
         {/* TOP BAR */}
-        <div className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+        <div className="shrink-0 border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between p-4">
-            {/* MOBILE MENU BUTTON */}
-            <button className="lg:hidden">
-              <Menu />
-            </button>
-
-            {/* TITLE */}
             <h1 className="text-xl font-bold text-emerald-500">
               MicroTask Dashboard
             </h1>
 
-            {/* NOTIFICATION ICON */}
             <div className="relative">
               <Bell className="cursor-pointer" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </div>
           </div>
         </div>
-        {/* PAGE CONTENT */}
-        <main className="p-6 flex-1">{children}</main>
+
+        {/* SCROLLABLE CONTENT */}
+        <main className="flex-1 overflow-y-auto p-10">{children}</main>
       </div>
     </div>
   );

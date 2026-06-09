@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useContext } from "react";
+import { useContext, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import {
@@ -27,11 +27,18 @@ import {
 
 import { AuthContext } from "@/context/AuthProvider";
 
-export default function Sidebar() {
-  const [open, setOpen] = useState(false);
+export default function Sidebar({ open, onToggle }) {
   const pathname = usePathname();
 
   const { user, loading } = useContext(AuthContext);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   const role = user?.role;
 
@@ -140,45 +147,57 @@ export default function Sidebar() {
   }
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">Loading......</div>;
   }
 
   return (
     <>
       {/* MOBILE MENU BUTTON */}
       <button
-        onClick={() => setOpen(true)}
-        className="
-          lg:hidden fixed top-4 left-4 z-[60]
-          p-2 rounded-lg
-          bg-emerald-500 text-white
-        "
+        type="button"
+        onClick={() => onToggle?.(!open)}
+        className="lg:hidden fixed top-4 left-4 z-[60] rounded-lg bg-emerald-500 p-2 text-white shadow-lg"
+        aria-label={open ? "Close dashboard menu" : "Open dashboard menu"}
+        aria-expanded={open}
       >
-        <Menu size={22} />
+        {open ? <X size={20} /> : <Menu size={20} />}
       </button>
+
+      {/* OVERLAY */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => onToggle?.(false)}
+        />
+      )}
 
       {/* SIDEBAR */}
       <aside
         className={`
-          fixed lg:static top-0
-          z-50 h-full w-72 min-h-screen
-          bg-white dark:bg-slate-900
-          border-r border-gray-200 dark:border-white/10
-          p-6 transition-all duration-300
-          overflow-y-auto
-          ${open ? "left-0" : "-left-72 lg:left-0"}
-        `}
+    fixed top-0 left-0
+    z-50
+    w-72
+    h-screen
+    bg-white dark:bg-slate-900
+    border-r border-gray-200 dark:border-white/10
+    overflow-y-auto
+    p-6
+    shadow-xl lg:shadow-none
+    transform transition-transform duration-300 ease-in-out
+    ${open ? "translate-x-0" : "-translate-x-full"}
+    lg:translate-x-0
+  `}
       >
         {/* CLOSE BUTTON */}
-        <button onClick={() => setOpen(false)} className="lg:hidden mb-6">
-          <X />
+        <button onClick={() => onToggle?.(false)} className="lg:hidden mb-6">
+          <X size={24} />
         </button>
 
         {/* LOGO */}
         <div>
           <h2 className="text-3xl font-black text-emerald-500">MicroTask</h2>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 capitalize">
+          <p className=" mt-4 text-2xl font-bold text-gray-500 dark:text-gray-400 capitalize">
             {role} Dashboard
           </p>
         </div>
@@ -195,6 +214,7 @@ export default function Sidebar() {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => onToggle?.(false)}
                 className={`
                   flex items-center gap-3
                   p-3 rounded-xl

@@ -2,8 +2,7 @@
 
 import { useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {} from /* no normalizeRole - use DB role directly */ "@/lib/role";
-import Swal from "sweetalert2";
+import {} from "@/lib/role";
 import { AuthContext } from "@/context/AuthProvider";
 
 export default function DashboardRedirectPage() {

@@ -19,16 +19,18 @@ export async function GET(req) {
 
     let result = {};
 
-  
     // WORKER DASHBOARD
-    
     if (role === "worker") {
-      const submissions = await db
-        .collection("submissions")
+      const submissionsCollection = db.collection("submissions");
+      const usersCollection = db.collection("users");
+      const tasksCollection = db.collection("tasks");
+      const notificationsCollection = db.collection("notifications");
+
+      const submissions = await submissionsCollection
         .find({ worker_email: email })
         .toArray();
 
-      const user = await db.collection("users").findOne({ email });
+      const user = await usersCollection.findOne({ email });
 
       const approvedSubmissions = submissions.filter(
         (s) => s.status === "approved"
@@ -38,22 +40,40 @@ export async function GET(req) {
         (s) => s.status === "pending"
       );
 
-      // EARNING CALCULATION
+      const rejectedSubmissions = submissions.filter(
+        (s) => s.status === "rejected"
+      );
+
       const earnings = approvedSubmissions.reduce((total, item) => {
         return total + (item.payable_amount || 0);
       }, 0);
+
+      const recentSubmissions = await submissionsCollection
+        .find({ worker_email: email })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .toArray();
+
+      const notifications = await notificationsCollection
+        .find({ toEmail: email })
+        .sort({ time: -1 })
+        .limit(5)
+        .toArray();
+
+      const availableTasks = await tasksCollection.countDocuments({
+        required_workers: { $gt: 0 },
+      });
 
       result = {
         coins: user?.coin || 0,
         totalSubmissions: submissions.length,
         pendingSubmissions: pendingSubmissions.length,
+        approvedSubmissions: approvedSubmissions.length,
+        rejectedSubmissions: rejectedSubmissions.length,
         earnings,
-        activities: submissions
-          .slice(-5)
-          .reverse()
-          .map(
-            (s) => `Task "${s.task_title}" is ${s.status}`
-          ),
+        availableTasks,
+        recentSubmissions,
+        notifications,
       };
     }
 

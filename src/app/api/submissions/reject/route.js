@@ -47,9 +47,11 @@ export async function PATCH(req) {
     // =========================
     await db.collection("notifications").insertOne({
       toEmail: submission.worker_email,
+      role: "worker",
       message: `Your submission for "${submission.task_title}" was rejected. Please try again.`,
       actionRoute: "/dashboard/task-list",
-      time: new Date(),
+      type: "error",
+      createdAt: new Date(),
     });
 
     return Response.json({

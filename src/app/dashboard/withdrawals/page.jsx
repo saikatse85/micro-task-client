@@ -15,20 +15,21 @@ export default function WithdrawPage() {
   // =========================
   // FETCH DATA
   // =========================
-  const fetchData = async () => {
+  const refreshData = async () => {
+    if (!user?.email) return;
+
     try {
       setLoading(true);
 
-      // USER COINS
-      const userRes = await fetch(
-        `/api/users/${encodeURIComponent(user?.email)}`,
-      );
+      const userRes = await fetch(`/api/users/${user.email}`);
       const userData = await userRes.json();
+      const dbUser = userData?.user ?? userData;
 
-      setCoins(userData?.coin || 0);
+      setCoins(
+        dbUser?.coin ?? dbUser?.coins ?? dbUser?.balance ?? user?.coin ?? 0,
+      );
 
-      // WITHDRAW HISTORY
-      const res = await fetch(`/api/withdraw?email=${user?.email}`);
+      const res = await fetch(`/api/withdraw?email=${user.email}`);
       const data = await res.json();
 
       setHistory(data);
@@ -40,8 +41,43 @@ export default function WithdrawPage() {
   };
 
   useEffect(() => {
-    if (user?.email) fetchData();
-  }, [user]);
+    if (!user?.email) return;
+
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        const userRes = await fetch(`/api/users/${user.email}`);
+        const userData = await userRes.json();
+        const dbUser = userData?.user ?? userData;
+
+        if (!isMounted) return;
+
+        setCoins(
+          dbUser?.coin ?? dbUser?.coins ?? dbUser?.balance ?? user?.coin ?? 0,
+        );
+
+        const res = await fetch(`/api/withdraw?email=${user.email}`);
+        const data = await res.json();
+
+        if (!isMounted) return;
+
+        setHistory(data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    void loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.email, user?.coin]);
 
   // =========================
   // REQUEST WITHDRAW
@@ -70,7 +106,7 @@ export default function WithdrawPage() {
     if (data.success) {
       Swal.fire("Success", "Withdraw request sent", "success");
       setAmount(0);
-      fetchData();
+      await refreshData();
     }
   };
 
@@ -139,7 +175,7 @@ export default function WithdrawPage() {
 
                 <span
                   className={`
-                    px-3 py-1 rounded-full text-xs font-bold
+                    px-3 py-3 my-auto rounded-full text-xs font-bold
                     ${
                       w.status === "pending"
                         ? "bg-yellow-100 text-yellow-700"
