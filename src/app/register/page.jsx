@@ -172,7 +172,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email }),
-        credentials: "same-origin",
+        credentials: "include",
       });
       const tokenData = await tokenResponse.json();
       if (!tokenResponse.ok || !tokenData.token) {
@@ -195,7 +195,7 @@ export default function RegisterPage() {
       form.reset();
       setImageUrl("");
       setSelectedRole("");
-      router.push(`/dashboard/${finalRole}`);
+      window.location.assign(`/dashboard/${finalRole}`);
     } catch (error) {
       console.log(error);
       Swal.fire({
@@ -244,7 +244,7 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: user.email }),
-        credentials: "same-origin",
+        credentials: "include",
       });
       const tokenData = await tokenResponse.json();
       if (!tokenResponse.ok || !tokenData.token) {
@@ -263,7 +263,7 @@ export default function RegisterPage() {
         text: "Welcome to MicroTask Platform!",
       });
 
-      router.push(`/dashboard/${finalRole}`);
+      window.location.assign(`/dashboard/${finalRole}`);
     } catch (error) {
       console.log(error);
       Swal.fire({

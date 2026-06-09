@@ -29,8 +29,10 @@ export async function POST(req) {
     });
 
     const maxAge = 7 * 24 * 60 * 60;
-    const secure = process.env.NODE_ENV === "production" ? "Secure; " : "";
-    const setCookie = `token=${token}; Path=/; Max-Age=${maxAge}; SameSite=Lax; ${secure}HttpOnly;`;
+    const isProd = process.env.NODE_ENV === "production";
+    const secure = isProd ? "Secure; " : "";
+    const sameSite = isProd ? "None" : "Lax";
+    const setCookie = `token=${token}; Path=/; Max-Age=${maxAge}; SameSite=${sameSite}; ${secure}HttpOnly;`;
 
     return new Response(JSON.stringify({ token, role }), {
       status: 200,

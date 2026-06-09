@@ -78,7 +78,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: result.user.email }),
-        credentials: "same-origin",
+        credentials: "include",
       });
       const tokenData = await tokenResponse.json();
 
@@ -99,9 +99,9 @@ export default function LoginPage() {
 
       setTimeout(() => {
         if (redirect === "/dashboard") {
-          router.push(`/dashboard/${redirectRole}`);
+          window.location.assign(`/dashboard/${redirectRole}`);
         } else {
-          router.push(redirect);
+          window.location.assign(redirect);
         }
       }, 500);
     } catch (error) {
@@ -164,7 +164,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: user.email }),
-        credentials: "same-origin",
+        credentials: "include",
       });
       const tokenData = await tokenResponse.json();
 
