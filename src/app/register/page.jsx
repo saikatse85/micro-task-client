@@ -31,6 +31,13 @@ export default function RegisterPage() {
 
   const router = useRouter();
 
+  const setAuthTokenCookie = (token) => {
+    const secure = window.location.protocol === "https:";
+    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; ${
+      secure ? "Secure" : ""
+    }`;
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -161,6 +168,20 @@ export default function RegisterPage() {
         throw new Error(registrationData.message || "Registration failed.");
       }
 
+      const tokenResponse = await fetch("/api/jwt", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email }),
+        credentials: "same-origin",
+      });
+      const tokenData = await tokenResponse.json();
+      if (!tokenResponse.ok || !tokenData.token) {
+        await signOut(auth);
+        throw new Error(tokenData.error || "Unable to generate auth token.");
+      }
+      localStorage.setItem("token", tokenData.token);
+      setAuthTokenCookie(tokenData.token);
+
       // Use the role from the response to ensure it matches MongoDB
       const savedUser = registrationData.user;
       const finalRole = savedUser?.role || role;
@@ -218,6 +239,19 @@ export default function RegisterPage() {
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Google registration failed.");
       }
+
+      const tokenResponse = await fetch("/api/jwt", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+        credentials: "same-origin",
+      });
+      const tokenData = await tokenResponse.json();
+      if (!tokenResponse.ok || !tokenData.token) {
+        throw new Error(tokenData.error || "Unable to generate auth token.");
+      }
+      localStorage.setItem("token", tokenData.token);
+      setAuthTokenCookie(tokenData.token);
 
       // Use the role from the response
       const savedUser = data.user;

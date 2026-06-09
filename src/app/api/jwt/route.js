@@ -28,7 +28,17 @@ export async function POST(req) {
       expiresIn: "7d",
     });
 
-    return Response.json({ token, role });
+    const maxAge = 7 * 24 * 60 * 60;
+    const secure = process.env.NODE_ENV === "production" ? "Secure; " : "";
+    const setCookie = `token=${token}; Path=/; Max-Age=${maxAge}; SameSite=Lax; ${secure}HttpOnly;`;
+
+    return new Response(JSON.stringify({ token, role }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Set-Cookie": setCookie,
+      },
+    });
   } catch (error) {
     return Response.json(
       { error: "Token generation failed" },

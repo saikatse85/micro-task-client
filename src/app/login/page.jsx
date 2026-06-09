@@ -24,6 +24,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const setAuthTokenCookie = (token) => {
+    const secure = window.location.protocol === "https:";
+    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; ${
+      secure ? "Secure" : ""
+    }`;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -71,6 +78,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: result.user.email }),
+        credentials: "same-origin",
       });
       const tokenData = await tokenResponse.json();
 
@@ -79,6 +87,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
+      setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
@@ -155,6 +164,7 @@ export default function LoginPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: user.email }),
+        credentials: "same-origin",
       });
       const tokenData = await tokenResponse.json();
 
@@ -163,6 +173,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
+      setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
