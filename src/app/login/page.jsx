@@ -99,9 +99,9 @@ export default function LoginPage() {
 
       setTimeout(() => {
         if (redirect === "/dashboard") {
-          window.location.assign(`/dashboard/${redirectRole}`);
+          router.push(`/dashboard/${redirectRole}`);
         } else {
-          window.location.assign(redirect);
+          router.push(redirect);
         }
       }, 500);
     } catch (error) {

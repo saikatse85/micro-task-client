@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -9,9 +9,13 @@ export const AuthContext = createContext();
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // NORMALIZE EMAIL
-  const normalizeEmail = (email) => email?.trim().toLowerCase();
+  const normalizeEmail = useCallback(
+    (email) => email?.trim().toLowerCase(),
+    [],
+  );
 
   // LOGOUT
   const logoutUser = async () => {
@@ -24,21 +28,24 @@ export default function AuthProvider({ children }) {
   };
 
   // FETCH FROM MONGODB
-  const fetchMongoUser = async (email) => {
-    try {
-      const res = await fetch(
-        `/api/users/${encodeURIComponent(normalizeEmail(email))}`,
-      );
+  const fetchMongoUser = useCallback(
+    async (email) => {
+      try {
+        const res = await fetch(
+          `/api/users/${encodeURIComponent(normalizeEmail(email))}`,
+        );
 
-      const data = await res.json();
+        const data = await res.json();
 
-      // IMPORTANT: return data.user not raw data
-      return data?.user || null;
-    } catch (error) {
-      console.log("Mongo fetch error:", error);
-      return null;
-    }
-  };
+        // IMPORTANT: return data.user not raw data
+        return data?.user || null;
+      } catch (error) {
+        console.log("Mongo fetch error:", error);
+        return null;
+      }
+    },
+    [normalizeEmail],
+  );
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -47,6 +54,8 @@ export default function AuthProvider({ children }) {
       try {
         if (!firebaseUser?.email) {
           setUser(null);
+          setLoading(false);
+          setAuthChecked(true);
           return;
         }
 
@@ -89,11 +98,12 @@ export default function AuthProvider({ children }) {
         setUser(null);
       } finally {
         setLoading(false);
+        setAuthChecked(true);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchMongoUser, normalizeEmail]);
 
   // MANUAL REFRESH (after profile update)
   const refreshUser = async () => {
@@ -118,6 +128,7 @@ export default function AuthProvider({ children }) {
       value={{
         user,
         loading,
+        authChecked,
         logoutUser,
         refreshUser,
       }}

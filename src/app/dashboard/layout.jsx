@@ -10,16 +10,16 @@ import Swal from "sweetalert2";
 import FooterSection from "@/components/Footer";
 
 export default function DashboardLayout({ children }) {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, authChecked } = useContext(AuthContext);
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && authChecked && !user) {
       router.push("/login");
     }
-  }, [user, loading, router]);
+  }, [user, loading, authChecked, router]);
 
   useEffect(() => {
     if (loading || !user || !pathname?.startsWith("/dashboard")) return;
