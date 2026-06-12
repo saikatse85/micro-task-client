@@ -6,14 +6,21 @@ export default function TopWorkersSection() {
 
   useEffect(() => {
     fetch("/api/users/top-workers")
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        return res.json();
+      })
       .then((result) => {
         setWorkers(result.data || []);
-        setLoading(false);
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Top workers error:", error);
         setWorkers([]);
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);

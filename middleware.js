@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 export function middleware(req) {
   const token = req.cookies.get("token")?.value;
-
+  console.log("TOKEN EXISTS:", !!token);
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block
