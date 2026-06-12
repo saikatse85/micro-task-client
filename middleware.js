@@ -16,22 +16,23 @@ export function middleware(req) {
 
     // 2. ROLE CHECKS
 
-    if (pathname.startsWith("/admin") && user.role !== "admin") {
+    if (pathname.startsWith("/dashboard/admin") && user.role !== "admin") {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    if (pathname.startsWith("/worker") && user.role !== "worker") {
+    if (pathname.startsWith("/dashboard/worker") && user.role !== "worker") {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
-    if (pathname.startsWith("/buyer") && user.role !== "buyer") {
+    if (pathname.startsWith("/dashboard/buyer") && user.role !== "buyer") {
       return NextResponse.redirect(new URL("/", req.url));
     }
 
     return NextResponse.next();
-  } catch (err) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
+  }catch (err) {
+  console.log("JWT ERROR:", err.message);
+  return NextResponse.redirect(new URL("/login", req.url));
+}
 }
 
 export const config = {
