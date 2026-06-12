@@ -60,6 +60,7 @@ export default function FooterSection() {
 
               <Link
                 href="/dashboard"
+                prefetch={false}
                 className="hover:text-emerald-400 transition"
               >
                 Dashboard

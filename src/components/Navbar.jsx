@@ -49,6 +49,7 @@ export default function Navbar() {
           {user && (
             <Link
               href="/dashboard"
+              prefetch={false}
               className="hover:text-emerald-500 transition"
             >
               Dashboard
@@ -131,6 +132,7 @@ export default function Navbar() {
                   <div className="mt-4 space-y-2">
                     <Link
                       href="/dashboard"
+                      prefetch={false}
                       onClick={() => setProfileOpen(false)}
                       className="
                 block p-3 rounded-xl
@@ -223,6 +225,7 @@ export default function Navbar() {
           {user && (
             <Link
               href="/dashboard"
+              prefetch={false}
               onClick={() => setOpen(false)}
               className="
               py-3 px-4 rounded-xl

@@ -42,6 +42,7 @@ export default function NotFound() {
 
           <Link
             href="/dashboard"
+            prefetch={false}
             className="px-5 py-2 border border-slate-400 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800"
           >
             Dashboard

@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 export function middleware(req) {
-  const token = req.cookies.get("token")?.value;
-  console.log("TOKEN EXISTS:", !!token);
+  const cookieHeader = req.headers.get("cookie") || "";
+  const rawToken = req.cookies.get("token")?.value;
+  const fallbackToken = cookieHeader
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith("token="))
+    ?.split("=")[1];
+  const token = rawToken || fallbackToken || null;
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block

@@ -33,7 +33,8 @@ export default function RegisterPage() {
 
   const setAuthTokenCookie = (token) => {
     const secure = window.location.protocol === "https:";
-    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax; ${
+    const sameSite = secure ? "None" : "Lax";
+    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=${sameSite}; ${
       secure ? "Secure" : ""
     }`;
   };
