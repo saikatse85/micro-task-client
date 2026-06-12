@@ -87,7 +87,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      // setAuthTokenCookie(tokenData.token);
+      setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
@@ -97,12 +97,11 @@ export default function LoginPage() {
         showConfirmButton: false,
       });
 
+      const destination =
+        redirect === "/dashboard" ? `/dashboard/${redirectRole}` : redirect;
+
       setTimeout(() => {
-        if (redirect === "/dashboard") {
-          router.push(`/dashboard/${redirectRole}`);
-        } else {
-          router.push(redirect);
-        }
+        window.location.assign(destination);
       }, 500);
     } catch (error) {
       console.log(error);
@@ -173,7 +172,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      // setAuthTokenCookie(tokenData.token);
+      setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
@@ -184,7 +183,7 @@ export default function LoginPage() {
       });
 
       setTimeout(() => {
-        router.push(`/dashboard/${redirectRole}`);
+        window.location.assign(`/dashboard/${redirectRole}`);
       }, 500);
     } catch (error) {
       console.log(error);
