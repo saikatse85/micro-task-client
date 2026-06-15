@@ -10,12 +10,14 @@ export function middleware(req) {
     .find((cookie) => cookie.startsWith("token="))
     ?.split("=")[1];
   const token = rawToken || fallbackToken || null;
+  console.log(token);
+  
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block
-  // if (!token) {
-  //   return NextResponse.redirect(new URL("/login", req.url));
-  // }
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
@@ -37,7 +39,8 @@ export function middleware(req) {
     return NextResponse.next();
   }catch (err) {
   console.log("JWT ERROR:", err.message);
-  return NextResponse.redirect(new URL("/", req.url));
+  console.log("TOKEN EXISTS:", !!token);
+  return NextResponse.redirect(new URL("/login", req.url));
 }
 }
 
