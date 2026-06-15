@@ -37,7 +37,7 @@ export function middleware(req) {
     return NextResponse.next();
   }catch (err) {
   console.log("JWT ERROR:", err.message);
-  return NextResponse.redirect(new URL("/login", req.url));
+  return NextResponse.redirect(new URL("/dashboard", req.url));
 }
 }
 
