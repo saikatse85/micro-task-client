@@ -39,6 +39,7 @@ export function middleware(req) {
   }catch (err) {
   console.log("JWT ERROR:", err.message);
   console.log("TOKEN EXISTS:", !!token);
+  console.log("SECRET EXISTS:", !!process.env.JWT_SECRET);
   return NextResponse.redirect(new URL("/login", req.url));
 }
 }
