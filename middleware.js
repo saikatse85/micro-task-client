@@ -13,9 +13,9 @@ export function middleware(req) {
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
-  }
+  // if (!token) {
+  //   return NextResponse.redirect(new URL("/login", req.url));
+  // }
 
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
