@@ -2,25 +2,24 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
 export function middleware(req) {
-  const cookieHeader = req.headers.get("cookie") || "";
-  const rawToken = req.cookies.get("token")?.value;
-  const fallbackToken = cookieHeader
-    .split(";")
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith("token="))
-    ?.split("=")[1];
-  const token = rawToken || fallbackToken || null;
-  console.log(token);
+  
+  const token = req.cookies.get("token")?.value;
+  
+  console.log("TOKEN EXISTS:", !!token);
+  console.log("JWT_SECRET EXISTS:", !!process.env.JWT_SECRET);
   
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block
   if (!token) {
+     console.log("NO TOKEN FOUND");
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("USER:", user);
+    console.log("PATH:", pathname);
 
     // 2. ROLE CHECKS
 
