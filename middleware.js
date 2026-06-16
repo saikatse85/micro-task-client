@@ -4,10 +4,11 @@ import jwt from "jsonwebtoken";
 export function middleware(req) {
   
   const token = req.cookies.get("token")?.value;
-  console.log("TOKEN:", token);
+  console.log("========== MIDDLEWARE ==========");
   console.log("TOKEN EXISTS:", !!token);
-  console.log("JWT_SECRET EXISTS:", !!process.env.JWT_SECRET);
-  
+  console.log("TOKEN:", token?.slice(0, 20));
+  console.log("SECRET EXISTS:", !!process.env.JWT_SECRET);
+
   const pathname = req.nextUrl.pathname;
 
   // 1. No token → block
@@ -17,6 +18,13 @@ export function middleware(req) {
   }
 
   try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    console.log("DECODED:", decoded);
+    
     const user = jwt.verify(token, process.env.JWT_SECRET);
     console.log("USER:", user);
     console.log("PATH:", pathname);
