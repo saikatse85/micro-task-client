@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 export function middleware(req) {
   
   const token = req.cookies.get("token")?.value;
-  
+  console.log("TOKEN:", token);
   console.log("TOKEN EXISTS:", !!token);
   console.log("JWT_SECRET EXISTS:", !!process.env.JWT_SECRET);
   
@@ -37,7 +37,7 @@ export function middleware(req) {
 
     return NextResponse.next();
   }catch (err) {
-   console.log("JWT ERROR:", err);
+  console.log("JWT ERROR:", err);
   console.log("JWT ERROR MESSAGE:", err?.message);
   console.log("TOKEN EXISTS:", !!token);
   console.log("SECRET EXISTS:", !!process.env.JWT_SECRET);
