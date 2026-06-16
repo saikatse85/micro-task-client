@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 import {
   signInWithEmailAndPassword,
@@ -18,19 +18,18 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const redirect = searchParams.get("redirect") || "/dashboard";
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const setAuthTokenCookie = (token) => {
-    const secure = window.location.protocol === "https:";
-    const sameSite = secure ? "None" : "Lax";
-    document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=${sameSite}; ${
-      secure ? "Secure" : ""
-    }`;
-  };
+  // const setAuthTokenCookie = (token) => {
+  //   const secure = window.location.protocol === "https:";
+  //   const sameSite = secure ? "None" : "Lax";
+  //   document.cookie = `token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=${sameSite}; ${
+  //     secure ? "Secure" : ""
+  //   }`;
+  // };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -88,7 +87,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      setAuthTokenCookie(tokenData.token);
+      // setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
@@ -173,7 +172,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", tokenData.token);
-      setAuthTokenCookie(tokenData.token);
+      // setAuthTokenCookie(tokenData.token);
 
       Swal.fire({
         icon: "success",
