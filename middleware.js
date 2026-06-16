@@ -24,7 +24,7 @@ export function middleware(req) {
     );
 
     console.log("DECODED:", decoded);
-    
+
     const user = jwt.verify(token, process.env.JWT_SECRET);
     console.log("USER:", user);
     console.log("PATH:", pathname);
@@ -45,11 +45,16 @@ export function middleware(req) {
 
     return NextResponse.next();
   }catch (err) {
-  console.log("JWT ERROR:", err);
-  console.log("JWT ERROR MESSAGE:", err?.message);
-  console.log("TOKEN EXISTS:", !!token);
-  console.log("SECRET EXISTS:", !!process.env.JWT_SECRET);
-  return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.json({
+    tokenExists: !!token,
+    secretExists: !!process.env.JWT_SECRET,
+    error: err?.message,
+  });
+  // console.log("JWT ERROR:", err);
+  // console.log("JWT ERROR MESSAGE:", err?.message);
+  // console.log("TOKEN EXISTS:", !!token);
+  // console.log("SECRET EXISTS:", !!process.env.JWT_SECRET);
+  // return NextResponse.redirect(new URL("/login", req.url));
 }
 }
 
