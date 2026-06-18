@@ -52,6 +52,7 @@ export async function PATCH(req) {
       {
         $inc: {
           coin: task.payable_amount,
+          total_earned: task.payable_amount,
         },
       }
     );

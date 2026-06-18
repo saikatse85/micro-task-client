@@ -96,27 +96,26 @@ export default function WorkerStatusPage() {
           Track your submissions, earnings, and task activity.
         </p>
 
-        <div className="mt-5">
-          <p className="text-sm text-white/80">Current Coin Balance</p>
+        <div className="grid md:grid-cols-2 gap-6 mt-5">
+          <div>
+            <p className="text-sm text-white/80">Current Coin Balance</p>
+            <h2 className="text-4xl font-black mt-2">{stats.coins} Coins</h2>
+          </div>
 
-          <h2 className="text-5xl font-black mt-2">{stats.coins} Coins</h2>
+          <div>
+            <p className="text-sm text-white/80">Total Earnings</p>
+            <h2 className="text-4xl font-black mt-2">{stats.earnings} Coins</h2>
+          </div>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <StatCard title="Coin Balance" value={stats.coins} />
         <StatCard title="Total Submissions" value={stats.submitted} />
         <StatCard title="Pending" value={stats.pending} />
         <StatCard title="Approved" value={stats.approved} />
         <StatCard title="Rejected" value={stats.rejected} />
         <StatCard title="Available Tasks" value={stats.availableTasks} />
-
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 md:col-span-2 xl:col-span-3">
-          <h3 className="text-emerald-500 font-bold">Total Earnings</h3>
-
-          <p className="text-4xl font-black mt-3">{stats.earnings} Coins</p>
-        </div>
       </div>
 
       {/* Withdrawal Progress */}

@@ -19,7 +19,9 @@ export async function GET(req) {
 
     let result = {};
 
+    // =========================
     // WORKER DASHBOARD
+    // =========================
     if (role === "worker") {
       const submissionsCollection = db.collection("submissions");
       const usersCollection = db.collection("users");
@@ -44,10 +46,6 @@ export async function GET(req) {
         (s) => s.status === "rejected"
       );
 
-      const earnings = approvedSubmissions.reduce((total, item) => {
-        return total + (item.payable_amount || 0);
-      }, 0);
-
       const recentSubmissions = await submissionsCollection
         .find({ worker_email: email })
         .sort({ createdAt: -1 })
@@ -66,90 +64,129 @@ export async function GET(req) {
 
       result = {
         coins: user?.coin || 0,
+        earnings: user?.total_earned || 0,
+
         totalSubmissions: submissions.length,
         pendingSubmissions: pendingSubmissions.length,
         approvedSubmissions: approvedSubmissions.length,
         rejectedSubmissions: rejectedSubmissions.length,
-        earnings,
+
         availableTasks,
         recentSubmissions,
         notifications,
       };
     }
 
-
+    // =========================
     // BUYER DASHBOARD
-    
+    // =========================
     else if (role === "buyer") {
-      const tasks = await db
-        .collection("tasks")
+      const tasksCollection = db.collection("tasks");
+      const usersCollection = db.collection("users");
+
+      const tasks = await tasksCollection
         .find({ buyer_email: email })
         .toArray();
 
-      const submissions = await db
-        .collection("submissions")
-        .find({ buyer_email: email })
-        .toArray();
+      const user = await usersCollection.findOne({ email });
 
-      const user = await db.collection("users").findOne({ email });
+      const pendingWorkers = tasks.reduce(
+        (sum, task) => sum + (task.required_workers || 0),
+        0
+      );
 
-      const pendingWorkers = submissions.filter(
-        (s) => s.status === "pending"
+      const totalPayments = tasks.reduce(
+        (sum, task) =>
+          sum +
+          (task.required_workers || 0) *
+            (task.payable_amount || 0),
+        0
       );
 
       result = {
         coins: user?.coin || 0,
         totalTasks: tasks.length,
-        pendingWorkers: pendingWorkers.length,
-        payments: tasks.reduce(
-          (sum, t) =>
-            sum +
-            (t.required_workers || 0) *
-              (t.payable_amount || 0),
-          0
-        ),
+        pendingWorkers,
+        payments: totalPayments,
+
         activities: tasks
           .slice(-5)
           .reverse()
-          .map((t) => `Task "${t.task_title}" is ${t.status || "active"}`),
+          .map(
+            (task) =>
+              `Task "${task.task_title}" is ${
+                task.status || "active"
+              }`
+          ),
       };
     }
 
+    // =========================
     // ADMIN DASHBOARD
-    
+    // =========================
     else if (role === "admin") {
-      const users = await db.collection("users").find().toArray();
-      const tasks = await db.collection("tasks").find().toArray();
+      const usersCollection = db.collection("users");
+      const tasksCollection = db.collection("tasks");
+      const paymentsCollection = db.collection("payments");
+      const withdrawalsCollection =
+        db.collection("withdrawals");
+
+      const users = await usersCollection.find().toArray();
+
+      const totalWorkers = users.filter(
+        (user) => user.role === "worker"
+      ).length;
+
+      const totalBuyers = users.filter(
+        (user) => user.role === "buyer"
+      ).length;
 
       const totalCoins = users.reduce(
-        (sum, u) => sum + (u.coin || 0),
+        (sum, user) => sum + (user.coin || 0),
         0
       );
 
-      const workers = users.filter(
-        (u) => u.role === "worker"
-      ).length;
+      const payments = await paymentsCollection
+        .find()
+        .toArray();
 
-      const buyers = users.filter(
-        (u) => u.role === "buyer"
-      ).length;
+      const totalPayments = payments.reduce(
+        (sum, payment) =>
+          sum + (payment.amount || 0),
+        0
+      );
+
+      const pendingWithdrawals =
+        await withdrawalsCollection.countDocuments({
+          status: "pending",
+        });
+
+      const recentTasks = await tasksCollection
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .toArray();
 
       result = {
-        workers,
-        buyers,
+        totalWorkers,
+        totalBuyers,
         totalCoins,
-        payments: tasks.reduce(
-          (sum, t) =>
-            sum +
-            (t.required_workers || 0) *
-              (t.payable_amount || 0),
-          0
-        ),
-        activities: tasks
-          .slice(-5)
-          .reverse()
-          .map((t) => `Task "${t.task_title}" created`),
+        totalPayments,
+        pendingWithdrawals,
+
+        recentActivities: recentTasks.map((task) => ({
+          id: task._id,
+          title: task.task_title,
+          buyer: task.buyer_email,
+          createdAt: task.createdAt,
+        })),
       };
+    }
+    else {
+      return Response.json(
+        { message: "Invalid role" },
+        { status: 400 }
+      );
     }
 
     return Response.json(result);
@@ -157,8 +194,12 @@ export async function GET(req) {
     console.log("DASHBOARD API ERROR:", error);
 
     return Response.json(
-      { message: error.message },
-      { status: 500 }
+      {
+        message: error.message,
+      },
+      {
+        status: 500,
+      }
     );
-  }
-}
+  };
+};
