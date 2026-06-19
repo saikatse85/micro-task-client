@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
       {/* Hero */}
       <div className="rounded-3xl bg-gradient-to-r from-emerald-500 to-green-600 p-8 text-white">
         <h1 className="text-3xl md:text-4xl font-black">
-          Welcome Back, {user.name} 👋
+          Welcome Back, Admin {user.name} 👋
         </h1>
 
         <p className="mt-3 text-white/90">

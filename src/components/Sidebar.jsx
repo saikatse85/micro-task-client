@@ -8,6 +8,7 @@ import {
   Bell,
   Menu,
   X,
+  Star,
   ClipboardList,
   FileText,
   Wallet,
@@ -126,6 +127,12 @@ export default function Sidebar({ open, onToggle }) {
       href: "/dashboard/manage-tasks",
       icon: <ClipboardList size={18} />,
     },
+    {
+      name: "Manage Reviews",
+      href: "/dashboard/admin/manage-reviews",
+      icon: <Star size={18} />,
+    },
+
     {
       name: "Withdrawal Requests",
       href: "/dashboard/admin/withdrawal",
