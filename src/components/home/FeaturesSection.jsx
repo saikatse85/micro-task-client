@@ -1,5 +1,3 @@
-// src/components/home/FeaturesSection.jsx
-
 export default function FeaturesSection() {
   return (
     <section className="py-24 px-6 bg-gray-50 dark:bg-slate-900">

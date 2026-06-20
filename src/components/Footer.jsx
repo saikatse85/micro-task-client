@@ -54,30 +54,39 @@ export default function FooterSection() {
             <h3 className="text-2xl font-black mb-6">Quick Links</h3>
 
             <div className="flex flex-col gap-4 text-slate-600 dark:text-slate-400">
-              <Link href="/" className="hover:text-emerald-400 transition">
+              <Link
+                href="/"
+                className="hover:text-emerald-400 transition footer-link"
+              >
                 Home
               </Link>
 
               <Link
                 href="/dashboard"
                 prefetch={false}
-                className="hover:text-emerald-400 transition"
+                className="hover:text-emerald-400 transition footer-link"
               >
                 Dashboard
               </Link>
 
-              <Link href="/tasks" className="hover:text-emerald-400 transition">
+              <Link
+                href="/tasks"
+                className="hover:text-emerald-400 transition footer-link"
+              >
                 Tasks
               </Link>
 
               <Link
                 href="/leaderboard"
-                className="hover:text-emerald-400 transition"
+                className="hover:text-emerald-400 transition footer-link"
               >
                 Leaderboard
               </Link>
 
-              <Link href="/faq" className="hover:text-emerald-400 transition">
+              <Link
+                href="/faq"
+                className="hover:text-emerald-400 transition footer-link"
+              >
                 FAQ
               </Link>
             </div>

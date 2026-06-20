@@ -1,5 +1,3 @@
-// src/components/home/ExtraStepsSection.jsx
-
 export default function ExtraStepsSection() {
   return (
     <section className="py-24 px-6 bg-gray-50 dark:bg-slate-900">

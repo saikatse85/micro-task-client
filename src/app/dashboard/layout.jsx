@@ -7,7 +7,6 @@ import Sidebar from "@/components/Sidebar";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthContext } from "@/context/AuthProvider";
 import Swal from "sweetalert2";
-import FooterSection from "@/components/Footer";
 
 export default function DashboardLayout({ children }) {
   const { user, loading, authChecked } = useContext(AuthContext);

@@ -4,6 +4,7 @@ import AuthProvider from "@/context/AuthProvider";
 
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import FooterWrapper from "@/components/FooterWrapper";
 
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <Navbar />
             {children}
+            <FooterWrapper/>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -7,6 +7,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import Container from "./Container";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import NavLink from "./Navlink";
 
 export default function Navbar() {
   const { user, loading, logoutUser } = useContext(AuthContext);
@@ -42,23 +43,23 @@ export default function Navbar() {
 
         {/* DESKTOP MENU */}
         <div className="hidden lg:flex items-center gap-8">
-          <Link href="/" className="hover:text-emerald-500 transition">
+          <NavLink href="/" className="hover:text-emerald-500 transition">
             Home
-          </Link>
+          </NavLink>
 
           {user && (
-            <Link
+            <NavLink
               href="/dashboard"
               prefetch={false}
               className="hover:text-emerald-500 transition"
             >
               Dashboard
-            </Link>
+            </NavLink>
           )}
 
-          <Link href="/tasks" className="hover:text-emerald-500 transition">
+          <NavLink href="/tasks" className="hover:text-emerald-500 transition">
             Tasks
-          </Link>
+          </NavLink>
         </div>
 
         {/* RIGHT SIDE */}

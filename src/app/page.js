@@ -10,7 +10,6 @@ import FAQSection from "@/components/home/FAQSection";
 import CTASection from "@/components/home/CTASection";
 import ScrollToTop from "@/components/home/ScrollToTop";
 import HeroSection from "@/components/home/HeroSection";
-import FooterSection from "@/components/Footer";
 
 export default function HomePage() {
   return (
@@ -23,7 +22,6 @@ export default function HomePage() {
       <ExtraStepsSection />
       <FAQSection />
       <CTASection />
-      <FooterSection/>
       <ScrollToTop />
     </main>
   );

@@ -1,9 +1,11 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
+import { updateProfile } from "firebase/auth";
 import { AuthContext } from "@/context/AuthProvider";
+import { auth } from "@/lib/firebase";
+import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 export default function ProfilePage() {
   const {
@@ -11,9 +13,16 @@ export default function ProfilePage() {
     loading: authLoading,
     refreshUser,
   } = useContext(AuthContext);
-  const [formData, setFormData] = useState({ name: "", photoURL: "" });
 
-  // SYNC FORM DATA WITH AUTH USER
+  const [formData, setFormData] = useState({
+    name: "",
+    photoURL: "",
+  });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     if (authUser) {
       setFormData({
@@ -23,7 +32,15 @@ export default function ProfilePage() {
     }
   }, [authUser]);
 
-  // UPDATE USER
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -33,6 +50,14 @@ export default function ProfilePage() {
     }
 
     try {
+      let photoURL = formData.photoURL;
+
+      if (imageFile) {
+        setUploading(true);
+        photoURL = await uploadImageToCloudinary(imageFile);
+        setUploading(false);
+      }
+
       const res = await fetch(
         `/api/users/${encodeURIComponent(authUser.email)}`,
         {
@@ -42,7 +67,7 @@ export default function ProfilePage() {
           },
           body: JSON.stringify({
             name: formData.name,
-            photoURL: formData.photoURL,
+            photoURL,
           }),
         },
       );
@@ -50,22 +75,38 @@ export default function ProfilePage() {
       const data = await res.json();
 
       if (data.modifiedCount > 0 || data.success) {
-        Swal.fire("Success", "Profile updated successfully", "success");
-        // Refresh user data from database
+        if (auth.currentUser) {
+          await updateProfile(auth.currentUser, {
+            displayName: formData.name,
+            photoURL,
+          });
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          photoURL,
+        }));
+
         await refreshUser();
+
+        Swal.fire("Success", "Profile updated successfully", "success");
       } else {
         Swal.fire("Info", "No changes were made", "info");
       }
-    } catch (err) {
-      console.error("Update error:", err);
-      Swal.fire("Error", "Update failed", "error");
+    } catch (error) {
+      console.error(error);
+
+      Swal.fire("Error", "Profile update failed", "error");
+    } finally {
+      setUploading(false);
     }
   };
 
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        {" "}
+        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>{" "}
       </div>
     );
   }
@@ -73,22 +114,28 @@ export default function ProfilePage() {
   if (!authUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        {" "}
         <p className="text-center text-slate-500">
-          Please log in to view your profile
-        </p>
+          Please log in to view your profile{" "}
+        </p>{" "}
       </div>
     );
   }
 
   return (
     <main className="min-h-screen bg-white text-black dark:bg-slate-950 dark:text-white flex items-center justify-center p-6">
+      {" "}
       <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-10 items-center">
-        {/* LEFT - PROFILE CARD (like home hero card) */}
+        {/* Profile Card */}{" "}
         <div className="bg-white/70 dark:bg-white/10 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl">
+          {" "}
           <div className="text-center">
             <img
               src={
-                authUser?.photoURL || authUser?.photo || "/default-avatar.png"
+                preview ||
+                authUser?.photoURL ||
+                authUser?.photo ||
+                "/default-avatar.png"
               }
               alt="user"
               className="w-28 h-28 mx-auto rounded-full border-4 border-emerald-500 object-cover"
@@ -104,8 +151,6 @@ export default function ProfilePage() {
               {authUser?.role || "User"}
             </span>
           </div>
-
-          {/* STATS */}
           <div className="grid grid-cols-2 gap-4 mt-10">
             <div className="bg-white/40 dark:bg-slate-900/60 p-4 rounded-2xl text-center border border-gray-200 dark:border-white/10">
               <h3 className="text-2xl font-bold text-emerald-400">
@@ -120,61 +165,59 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-
-        {/* RIGHT - EDIT FORM (home style inputs) */}
+        {/* Edit Form */}
         <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-3xl p-8 shadow-xl">
           <h1 className="text-4xl font-black mb-8 text-center">My Profile</h1>
 
           <form onSubmit={onSubmit} className="space-y-5">
-            {/* Name */}
             <input
               type="text"
               value={formData.name}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({
+                  ...formData,
+                  name: e.target.value,
+                })
               }
               placeholder="Your Name"
               className="w-full p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-emerald-500 outline-none"
             />
 
-            {/* Email */}
             <input
               value={authUser?.email || ""}
               disabled
               className="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-800 text-slate-500 border border-gray-200 dark:border-white/10"
             />
 
-            {/* Photo */}
             <input
-              type="text"
-              value={formData.photoURL}
-              onChange={(e) =>
-                setFormData({ ...formData, photoURL: e.target.value })
-              }
-              placeholder="Photo URL"
-              className="w-full p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-emerald-500 outline-none"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-white/10"
             />
 
-            {/* Role */}
+            {uploading && (
+              <p className="text-sm text-emerald-500">Uploading image...</p>
+            )}
+
             <input
               value={authUser?.role || ""}
               disabled
               className="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-800 text-slate-500 border border-gray-200 dark:border-white/10"
             />
 
-            {/* Coins */}
             <input
               value={`Coins: ${authUser?.coin || 0}`}
               disabled
               className="w-full p-4 rounded-2xl bg-gray-100 dark:bg-slate-800 text-slate-500 border border-gray-200 dark:border-white/10"
             />
 
-            {/* BUTTON */}
             <button
               type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-600 transition text-black font-bold py-4 rounded-2xl text-lg"
+              disabled={uploading}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 transition text-black font-bold py-4 rounded-2xl text-lg disabled:opacity-70"
             >
-              Update Profile
+              {uploading ? "Uploading..." : "Update Profile"}
             </button>
           </form>
         </div>

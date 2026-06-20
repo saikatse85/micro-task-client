@@ -46,3 +46,24 @@ body {
   background-color: var(--background);
   color: var(--foreground);
 }
+
+.footer-link {
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.footer-link:hover::after {
+  width: 40%;
+}

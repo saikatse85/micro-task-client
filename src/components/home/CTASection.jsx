@@ -1,4 +1,4 @@
-// src/components/home/CTASection.jsx
+import Link from "next/link";
 
 export default function CTASection() {
   return (
@@ -13,9 +13,11 @@ export default function CTASection() {
           real money.
         </p>
 
-        <button className="mt-10 bg-black text-white px-10 py-5 rounded-2xl font-bold text-lg hover:scale-105 transition duration-300">
-          Join Now
-        </button>
+        <Link href="/login">
+          <button className="mt-10 bg-black text-white px-10 py-5 rounded-2xl font-bold text-lg hover:scale-105 transition duration-300">
+            Join Now
+          </button>
+        </Link>
       </div>
     </section>
   );
