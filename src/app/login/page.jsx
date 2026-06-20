@@ -252,11 +252,11 @@ export default function LoginPage() {
                 required
                 placeholder="Enter your password"
                 className="
-        w-full px-4 py-3 pr-12
-        rounded-2xl border outline-none transition
-        bg-slate-100 dark:bg-slate-800
-        border-slate-300 dark:border-white/10
-        focus:border-emerald-500 dark:focus:border-emerald-400
+                w-full px-4 py-3 pr-12
+                rounded-2xl border outline-none transition
+              bg-slate-100 dark:bg-slate-800
+              border-slate-300 dark:border-white/10
+              focus:border-emerald-500 dark:focus:border-emerald-400
       "
               />
 
@@ -270,6 +270,15 @@ export default function LoginPage() {
               >
                 {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
+            </div>
+            {/* FORGOT PASSWORD */}
+            <div className="flex justify-end mt-2">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-emerald-500 dark:text-emerald-400 hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
           </div>
 
